@@ -77,6 +77,7 @@ def getpagedata(data,destdir, index, curhttps):
 		with open(destpicpath,'wb') as file:
 			file.write(picdata)
 		#print('picname is %s: %s' %(picname, rs))
+		time.sleep(random.random())
 	result3 = re.search(pattern3, data)
 	if not result3:
 		return None
@@ -109,6 +110,7 @@ def workthread(item, user_agent,path):
 	page = 1
 	while(1):
 		content = getpagedata(content,destdir,page,strurl2)
+		time.sleep(random.random())
 		if not content:
 			break
 		page = page + 1

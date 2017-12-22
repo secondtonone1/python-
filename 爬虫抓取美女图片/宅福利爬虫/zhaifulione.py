@@ -108,6 +108,7 @@ class GetMMPic(object):
 				picdata =response.read()
 				with open(filedir,'wb') as file:
 					file.write(picdata)
+				time.sleep(random.random())
 				
 			
 			nextrs = re.search(nextpagepattern, content)
