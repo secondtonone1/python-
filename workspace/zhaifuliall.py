@@ -26,7 +26,8 @@ def requestData(url, user_agent):
 	try:
 		req = request.Request(url)
 		req.add_header('User-Agent', user_agent)
-		response = request.urlopen(req,timeout = 8)
+		req.add_header('Connection','keep-alive')
+		response = request.urlopen(req,timeout = 10)
 		#bytes变为字符串
 		content = response.read().decode('gbk')
 	except error.URLError as e:
