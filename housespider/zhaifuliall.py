@@ -21,14 +21,15 @@ http.client.HTTPConnection._http_vsn_str = 'HTTP/1.0'
 
 USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0'
 
-
+contents=""
 def requestData(url, user_agent):
+	global contents
 	try:
 		req = request.Request(url)
 		req.add_header('User-Agent', user_agent)
 		response = request.urlopen(req,timeout = 8)
 		#bytes变为字符串
-		content = response.read().decode('utf-8')
+		contents = response.read().decode('utf-8')
 	except error.URLError as e:
 		if hasattr(e,'code'):
 			print (e.code)
@@ -40,85 +41,61 @@ def requestData(url, user_agent):
 		if hasattr(e,'reason'):
 			print(e.reason)
 		print('HTTPError!!!')
-
-	return content
-
-
-def getpagedata(data,destdir, index, curhttps):
-	print('正在爬取第%d页.......' %index)
-	s1 = r'<p><img src="(.*?)"'
-	s2 = r'http://images.zhaofulipic.com:8818/allimg/.*?/(.*?)$'
-	s3 = r'http://images.zhaofulipic.com:8818/allimg/171217/(.*?).jpg"'
-	s3 = r'''<li class='next-page'><a target="_blank" href='(.*?)'>下一页'''
-
-	#选出图片列表
-	pattern1 =re.compile(s1, re.S)
-	#选出图片后缀名
-	pattern2 = re.compile(s2, re.S)
-	#选出下一页信息
-	pattern3 = re.compile(s3, re.S)
-
-	result = re.findall(pattern1, data)
-
+	return contents
 	
-	for rs in result:
-		
-		picname1 = re.search(pattern2,rs)
-		picname = picname1.group(1)
-		
-		req = request.Request(rs)
-		
-
-		req.add_header('User-Agent',USER_AGENT)
-		try:
-			response = request.urlopen(req)
-			picdata =response.read()
-		
-			destpicpath = os.path.join(destdir,picname)
-			with open(destpicpath,'wb') as file:
-				file.write(picdata)
-			#print('picname is %s: %s' %(picname, rs))
-			time.sleep(random.randint(5,6))
-		except Exception as e:
-			pass
-		
-	result3 = re.search(pattern3, data)
-	if not result3:
-		return None
-
-	
-	print('第%d页爬取完成.......' %index)
-	nextpage = curhttps+result3.group(1)
-	req = request.Request(nextpage)
-	print('nextpage is %s' %(nextpage) )
-	req.add_header('User-Agent',USER_AGENT)
-	response = request.urlopen(req)
-	nextdata = response.read().decode('gbk')
-		
-	return nextdata	
-	
-
 def workthread(item, user_agent,path):
-	strurl = 'http://yxpjw.club'+item[0]
+	strurl = item[0]
 	picname = item[1]
+	dirname = re.search(r'www.douban.com/group/topic/(.*?)/',strurl).group(1)
 	print('正在爬取%s...........................\n' %(picname))
 	content = requestData(strurl,user_agent)
+	httpstr = r'<div class="tabs".*?>.*?<a href="(.*?)#sep'
+	httppattern = re.compile(httpstr,re.S)
+	patternstr = r'<div class="topic-content">(.*?)<div class="sns-bar" id="sep">'
+	pattern =re.compile(patternstr , re.S )
+	patterncontent = re.findall(pattern,content)
+	if(len(patterncontent)==0 ):
+		print('no content\n')
+		return
+	httpcontent = re.findall(httppattern,content)
+	dirname = os.path.join(path,dirname);
+	if(os.path.exists(dirname)==False):
+		os.makedirs(dirname)
+	filetxt = "file.txt"
+	filename = os.path.join(dirname,filetxt)
+	if(os.path.exists(filename)):
+		os.remove(filename)
+	replacedStr = re.sub(r'<div.*?>|<p.*?>|<img.*?>|</p>|\n|<span style.*?>|</span>|<iframe.*?>|</iframe>|</div.*?>', r'\n', patterncontent[0])
+	with open(filename,'a',encoding='utf-8') as file:
+		file.write(httpcontent[0]+'\n')
+		file.write(item[1]+'\n')
+		file.write(replacedStr+'\n')
 
-	strurl2 = re.search(r'^(.*)/',strurl).group(0)
-	print('https headers...............%s'%(strurl2))
-	#destname = os.path.join(path,picname+'.txt')
-	#with open(destname, 'w',encoding='gbk') as file:
-		#file.write(content)
-	destdir = os.path.join(path,picname)
-	os.makedirs(destdir)
-	page = 1
-	while(1):
-		content = getpagedata(content,destdir,page,strurl2)
-		time.sleep(random.randint(5,6))
-		if not content:
-			break
-		page = page + 1
-	print('%s数据爬取成功！！！\n'%(picname))
+	##生成图片
+	picstr=r'<div class="image-wrapper"><img src="(.*?)"'
+	piccontent = re.findall(picstr,patterncontent[0])
+	for i in piccontent:
+		lastindex=i.rfind('/')
+		if(lastindex==-1):
+			continue
+		picture = i[lastindex+1:]
+		picturename = os.path.join(dirname,picture)
+		if(os.path.exists(picturename)):
+			os.remove(picturename)
+		print('正在爬取%s...........................\n' %(picture))
+		req = request.Request(i)
+		req.add_header('User-Agent',USER_AGENT)
+		try:
+			response = request.urlopen(req,timeout = 8)
+			picdata =response.read()
+			with open(picturename,'wb') as file:
+				file.write(picdata)
+			time.sleep(random.randint(1,2))
+		except Exception :
+			print("error code ")
+		print('爬取成功%s...........................\n' %(picture))
+	print('%s数据爬取成功！！！\n' %(picname))
+	
 
 
 
@@ -148,61 +125,49 @@ class GetMMPic(object):
 	def setpath(self,path):
 		self.path = path
 
-	def getDetailPic(self, item):
-		strurl = 'http://yxpjw.club'+item[0]
-
-		picname = item[1]
-		print('正在爬取%s...........................\n' %(picname))
-		content = requestData(strurl, self.user_agent)
-		with open('file.txt', 'w',encoding='gbk') as file:
-			file.write(content)
-		print('%s数据爬取成功！！！\n'%(picname))
-
 	def getDetailList(self,content):
-		s2 = r'<h2><a target="_blank" href="(.*?)" title="(.*?)"'
-		pattern =re.compile(s2 , re.S
-			)
-		result = re.findall(pattern, content)
-		with open('file.txt','w',encoding='gbk') as f:
-			f.write(content)
-
+		patternstr = r'<td class="title">.*?<a href="(.*?)" title="(.*?)" class='
+		filetemp ='file.txt'
+		itempattern =re.compile(patternstr , re.S )
+		result = re.findall(itempattern, content)
 		if not result:
 			print('匹配规则不适配..............')
-		
-		
+		#print('匹配条目:%s' %(result))
+		filepathtemp = os.path.join(self.path,filetemp);
+		with open(filepathtemp,'w',encoding='utf-8') as f:
+			for item in result:
+				f.write(item[1]+'\n');
+				f.write(item[0]+'\n');
 		threadsList=[] 
 		for item in result:
-			t = threading.Thread(target = workthread, args=(item, self.user_agent, self.path))
-			threadsList.append(t)
-			t.start()
+			#t = threading.Thread(target = workthread, args=(item, self.user_agent, self.path))
+			#threadsList.append(t)
+			#t.start()
+			workthread(item, self.user_agent,self. path);
+			pass
+			
 			
 		for threadid in threadsList:
-			threadid.join()
+		 	threadid.join()		
+
 		
-
-
-
 	def getAbstractInfo(self):
 		
 		try:
-			content = requestData(self.url, self.user_agent)
-			testtext='file.txt'
-			testtextfile=os.path.join(self.path,testtext)
-			with open(testtextfile,'w') as file:
-				file.write(content)
-			#self.getDetailList(content)
-			
-		except error.URLError as e:
-			if hasattr(e,'code'):
-				print (e.code)
-			if hasattr(e,'reason'):
-				print (e.reason)
+			contenta = requestData(self.url, self.user_agent)
+			self.getDetailList(contenta)
+				
 		except error.HTTPError as e:
 			if hasattr(e,'code'):
 				print(e.code)
 			if hasattr(e,'reason'):
 				print(e.reason)
 			print('HTTPError!!!')
+		except error.URLError as e:
+		 	if hasattr(e,'code'):
+		 		print (e.code)
+		 	if hasattr(e,'reason'):
+		 		print (e.reason)
 
 
 
