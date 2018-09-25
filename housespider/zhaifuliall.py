@@ -65,7 +65,7 @@ def workthread(item, user_agent,path):
 	filename = os.path.join(dirname,filetxt)
 	if(os.path.exists(filename)):
 		os.remove(filename)
-	replacedStr = re.sub(r'<div.*?>|<p.*?>|<img.*?>|</p>|\n|<span style.*?>|</span>|<iframe.*?>|</iframe>|</div.*?>', r'\n', patterncontent[0])
+	replacedStr = re.sub(r'<div.*?>|<p.*?>|<img.*?>|</p>|\n|<span style.*?>|</span>|<iframe.*?>|</iframe>|</div.*?>|<span.*?>', r'\n', patterncontent[0])
 	with open(filename,'a',encoding='utf-8') as file:
 		file.write(httpcontent[0]+'\n')
 		file.write(item[1]+'\n')
