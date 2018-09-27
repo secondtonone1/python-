@@ -9,7 +9,8 @@ import string
 
 import time, threading
 
-import http.client  
+import http.client
+import configparser  
   
 http.client.HTTPConnection._http_vsn = 10  
 http.client.HTTPConnection._http_vsn_str = 'HTTP/1.0'
@@ -41,6 +42,8 @@ class GetMMPic(object):
 
     def setpath(self,path):
         self.path = path
+    def seturl(self,url):
+        self.url = url
     def getAbstractInfo(self):
         try:
             contenta = requestData(self.url, self.user_agent)
@@ -63,16 +66,16 @@ class GetMMPic(object):
     
 
     def getDetailList(self,content):
-        filterstr = r'<h3 class="title"><small class="pull-right">(.*?)<aside class="sidebar">'
+        filterstr = r'<h3 class="title">.*?<strong>(.*?)<aside class="sidebar">'
         filterpattern = re.compile(filterstr,re.S)
         listcontent=re.search(filterpattern,content)
         if(listcontent==None):
             print('filter not found')
             return
         listcontent = listcontent.group(1)
-        patternstr = r'<a target="_blank" href="(.*?)" title="(.*?)">'
+        patternstr = r'<a target="_blank" href="(.*?)".*?title="(.*?)">'
         itempattern =re.compile(patternstr , re.S )
-        result = re.findall(itempattern, content)
+        result = re.findall(itempattern, listcontent)
         if not result:
             print('匹配规则不适配..............')
         #print('匹配条目:%s' %(result))
@@ -170,11 +173,18 @@ def getPicData(imagelist,itemdir,imgsrcpattern):
 if __name__ == "__main__":
     #getMMPic = GetMMPic('D:/python/args')
     filepath = os.path.abspath(__file__)
-    getMMPic = GetMMPic(os.path.dirname(filepath))
+    filedir=os.path.dirname(filepath)
+    getMMPic = GetMMPic(filedir)
     now = datetime.now()
     timestr=now.strftime('%Y%m%d')
     todaypath = getMMPic.makedir(timestr)
     if  todaypath:
+        config = configparser.ConfigParser()
+        configpath=os.path.join(filedir,'config.ini')
+        config.read(configpath)
+        pages=config.items('page')
         getMMPic.setpath(todaypath)
-        getMMPic.getAbstractInfo()
+        for i in pages:
+            getMMPic.seturl(i[1])
+            getMMPic.getAbstractInfo()
 	
