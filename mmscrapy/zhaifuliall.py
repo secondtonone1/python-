@@ -66,14 +66,14 @@ class GetMMPic(object):
     
 
     def getDetailList(self,content):
-        filterstr = r'<h3 class="title">.*?<strong>(.*?)<aside class="sidebar">'
+        filterstr = r'<h3 class="title">.*?<strong>最新发布</strong></h3>(.*?)<aside class="sidebar">'
         filterpattern = re.compile(filterstr,re.S)
         listcontent=re.search(filterpattern,content)
         if(listcontent==None):
             print('filter not found')
             return
-        listcontent = listcontent.group(1)
-        patternstr = r'<a target="_blank" href="(.*?)".*?title="(.*?)">'
+        listcontent = listcontent.group(1)     
+        patternstr = r'<h2><a target="_blank" href="(.*?)" title="(.*?)">'
         itempattern =re.compile(patternstr , re.S )
         result = re.findall(itempattern, listcontent)
         if not result:
