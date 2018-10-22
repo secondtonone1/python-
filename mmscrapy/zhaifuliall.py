@@ -155,11 +155,11 @@ def getPicData(imagelist,itemdir,imgsrcpattern):
         req = request.Request(srcdata)
         req.add_header('User-Agent',USER_AGENT)
         try:
-            response = request.urlopen(req,timeout = 8)
+            response = request.urlopen(req,timeout = 10)
             picdata =response.read()
             with open(srcpath,'wb') as file:
                 file.write(picdata)
-            time.sleep(random.randint(1,2))
+            time.sleep(1)
         except Exception as e:
             print("error code ")
         print('爬取成功%s...........................\n' %(srcname))
