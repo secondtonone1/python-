@@ -26,7 +26,12 @@ class AsScrapy(object):
             classattrs={'class':'bus_vtem'}
             soup = BeautifulSoup(req.content.decode('utf-8'),'lxml')
             buslist = soup.find_all(attrs=classattrs)
-            print(len(buslist))  
+            #print(len(buslist))
+            for item in buslist:
+                if(item.a.attrs['title'] ==  "紧急通知！紧急通知！紧急通知！"):
+                    continue
+                print(item.a.attrs['title'])
+                print(item.a.attrs['href']) 
             time.sleep(1)
             pass
         except:
