@@ -28,7 +28,7 @@ if __name__ == "__main__":
         wait = WebDriverWait(browser,15)
         comment = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="J_TabBar"]/li[2]'    ) ))
         comment.click()
-        
+
         title = wait.until( EC.presence_of_element_located((By.XPATH, '//*[@id="J_TabBarBox"]'    ) ) )
         title.click()
         actions = ActionChains(browser)
