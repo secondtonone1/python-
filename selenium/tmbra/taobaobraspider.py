@@ -16,12 +16,12 @@ import os
 import sys
 class SeleniumCookie(object):
     def __init__(self,url):
-        options = webdriver.ChromeOptions()
+        option = webdriver.ChromeOptions()
         # 设置中文
-        options.add_argument('lang=zh_CN.UTF-8')
+        option.add_argument('lang=zh_CN.UTF-8')
         #options.add_argument(r"user-data-dir=C:\Users\secondtonone1\AppData\Local\Google\Chrome\User Data")
         self.url_=url
-        self.driver_ = webdriver.Chrome(options=options)
+        self.driver_ = webdriver.Chrome(chrome_options=option)
         self.driver_.get(self.url_)
         self.path=os.path.dirname(os.path.abspath(__file__))
         self.cookiepath = os.path.join(self.path,"seleniumcookies.pk1")
