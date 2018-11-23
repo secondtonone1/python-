@@ -25,11 +25,13 @@ class SeleniumCookie(object):
         self.driver_.get(self.url_)
         self.path=os.path.dirname(os.path.abspath(__file__))
         self.cookiepath = os.path.join(self.path,"seleniumcookies.pk1")
-        #self.save_cookie()
+        self.save_cookie()
         self.load_cookie()
         self.refresh_page()
         self.wait = WebDriverWait(self.driver_,10)
     def save_cookie(self):
+        if(os.path.exists(self.cookiepath)):
+            return
         time.sleep(60)
         with open (self.cookiepath,"wb") as f:
             pickle.dump(self.driver_.get_cookies(),f)
@@ -105,7 +107,7 @@ class SeleniumCookie(object):
        
        
 if __name__ == "__main__":
-    seleniumcookie = SeleniumCookie('https://www.tmall.com/')
+    seleniumcookie = SeleniumCookie('https://www.taobao.com/')
     seleniumcookie.openWindow('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
     seleniumcookie.closeDialog()
     seleniumcookie.clickComment()
