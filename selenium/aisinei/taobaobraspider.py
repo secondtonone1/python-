@@ -91,10 +91,15 @@ class SeleniumCookie(object):
             actionChain.context_click(itemelement).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ENTER).perform()
             time.sleep(1)
             self.switchWindow()
-            node=self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="postlist"]/div[3]/div[1]') ) )
-            print(node)
+            self.driver_.execute_script('window.scrollBy(0,2000)')
+            #点击大图
+            node=self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="postlist"]/div[3]/div[1]/div[2]/div/table/tbody/tr/td[2]/div[2]/div/div[2]/div[2]/div[1]/a[2]') ) )
+            print(node.text)
+            node.click()
+            #直接抓列表
+
             # -1代表向下移动一个单位，-100也会向下移动一个单位，都是一个单位哦，亲~
-            #win32api.mouse_event(win32con.MOUSEEVENTF_WHEEL,0,0,-1)
+            #win32api.mouse_event(win32con.MOUSEEVENTF_WHEEL,0,x0,-1)
             #self.switchWindow()
             time.sleep(2000)
             pass
@@ -105,7 +110,7 @@ class SeleniumCookie(object):
             print('No Element')
             self.driver_.close()
         except:
-            print('exception')
+            print('exception')xxxxxxx
             self.driver_.close()
             pass
 
