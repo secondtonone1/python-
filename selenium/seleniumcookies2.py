@@ -21,7 +21,7 @@ class SeleniumCookie(object):
         options.add_argument('lang=zh_CN.UTF-8')
         options.add_argument(r"user-data-dir=C:\Users\secondtonone1\AppData\Local\Google\Chrome\User Data")
         self.url_=url
-        self.driver_ = webdriver.Chrome(options=options)
+        self.driver_ = webdriver.Chrome(chrome_options=options)
         self.driver_.get(self.url_)
         self.path=os.path.dirname(os.path.abspath(__file__))
         
