@@ -89,34 +89,48 @@ class SeleniumCookie(object):
         try:
             actionChain = ActionChains(self.driver_)
             actionChain.context_click(itemelement).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ENTER).perform()
-            time.sleep(1)
-            self.switchWindow()
+            time.sleep(2)
+            self.switchWindow(1)
             self.driver_.execute_script('window.scrollBy(0,2000)')
             #点击大图
+            '''
             node=self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="postlist"]/div[3]/div[1]/div[2]/div/table/tbody/tr/td[2]/div[2]/div/div[2]/div[2]/div[1]/a[2]') ) )
             print(node.text)
             node.click()
+            time.sleep(2)
+            '''
             #直接抓列表
-
+            picliststr = '//*[@id="postlist"]/div[3]/div[1]/div[2]/div/table/tbody/tr/td[2]/div[2]/div/div[2]/div[2]/div[2]'
+            picnodelist=self.wait.until(EC.presence_of_element_located((By.XPATH,picliststr) ) )
+            piclist = picnodelist.find_elements_by_tag_name('ignore_js_op')
+            listsize=len(piclist)
+            for index in range(1,listsize+1):
+                elementstr=picliststr+'/ignore_js_op['+str(index)+']/dl/dd/div[2]/img'
+                picelement=self.wait.until(EC.presence_of_element_located((By.XPATH,elementstr) ) )
+                print(picelement.get_attribute('file'))
+                time.sleep(1)    
             # -1代表向下移动一个单位，-100也会向下移动一个单位，都是一个单位哦，亲~
             #win32api.mouse_event(win32con.MOUSEEVENTF_WHEEL,0,x0,-1)
-            #self.switchWindow()
-            time.sleep(2000)
-            pass
+            self.driver_.close()
+            self.switchWindow(0)
         except TimeoutException :
             print('TimeoutException')
             self.driver_.close()
+            self.switchWindow(0)
         except NoSuchElementException:
             print('No Element')
             self.driver_.close()
+            self.switchWindow(0)
         except:
-            print('exception')xxxxxxx
+            print('exception')
             self.driver_.close()
+            self.switchWindow(0)
             pass
+        
 
-    def switchWindow(self):
+    def switchWindow(self,index):
             #打开选项卡
-        self.driver_.switch_to_window(self.driver_.window_handles[1])
+        self.driver_.switch_to_window(self.driver_.window_handles[index])
         #self.refresh_page()
 
 if __name__ == "__main__":
