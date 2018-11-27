@@ -37,7 +37,8 @@ class SeleniumCookie(object):
         option = webdriver.ChromeOptions()
         # 设置中文
         option.add_argument('lang=zh_CN.UTF-8')
-      
+        #option.add_argument('--headless')
+        option.add_argument('--disable-gpu')
         self.url_=url
         self.driver_ = webdriver.Chrome(chrome_options=option)
         self.driver_.get(self.url_)
@@ -55,7 +56,7 @@ class SeleniumCookie(object):
                 }                
             self.driver_.add_cookie(cookie_dict)
         self.refresh_page()
-        time.sleep(1)
+        time.sleep(5)
 
     def refresh_page(self):
         self.driver_.refresh()
@@ -68,7 +69,8 @@ class SeleniumCookie(object):
             for item in itemlist[1:]:
                 divtag=item.find_element_by_tag_name('div')
                 itemdata=divtag.find_element_by_tag_name('a')
-                self.getItemPage(itemdata)
+                #self.getItemPage(itemdata)
+                self.getItemPage2(itemdata)
                 #print(itemdata.get_attribute('href'))
             #print(itemlist)                                                               
             #//*[@id="portal_block_36_content"]/li[1]
@@ -132,6 +134,38 @@ class SeleniumCookie(object):
             #打开选项卡
         self.driver_.switch_to_window(self.driver_.window_handles[index])
         #self.refresh_page()
+
+    def getItemPage2(self,itemelement):
+        try:
+            actionChain = ActionChains(self.driver_)
+            actionChain.context_click(itemelement).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ENTER).perform()
+            time.sleep(2)
+            self.switchWindow(1)
+            self.driver_.execute_script('window.scrollBy(0,2000)')
+            # 直接找到图片资源节点
+            picliststr = "//ignore_js_op/descendant::img[@class='zoom']"
+            picelements=self.wait.until(EC.presence_of_all_elements_located((By.XPATH,picliststr)))
+            for picelement in picelements:
+                print(picelement.get_attribute('file'))
+                #time.sleep(1)
+            self.driver_.close()
+            self.switchWindow(0)
+        except TimeoutException :
+            print('TimeoutException')
+            self.driver_.close()
+            self.switchWindow(0)
+        except NoSuchElementException:
+            print('No Element')
+            self.driver_.close()
+            self.switchWindow(0)
+        except:
+            print('exception')
+            self.driver_.close()
+            self.switchWindow(0)
+            pass
+        
+       
+        
 
 if __name__ == "__main__":
     seleniumcookie = SeleniumCookie('https://www.aisinei.org/portal.php')
