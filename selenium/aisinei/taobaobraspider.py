@@ -16,6 +16,7 @@ import os
 import sys
 import win32api
 import win32con
+USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0'
 COOKIES='__cfduid=d78f862232687ba4aae00f617c0fd1ca81537854419; \
             bg5D_2132_saltkey=jh7xllgK; \
             bg5D_2132_lastvisit=1540536781; \
@@ -35,6 +36,7 @@ COOKIES='__cfduid=d78f862232687ba4aae00f617c0fd1ca81537854419; \
 class SeleniumCookie(object):
     def __init__(self,url):
         option = webdriver.ChromeOptions()
+        
         # 设置中文
         option.add_argument('lang=zh_CN.UTF-8')
         #option.add_argument('--headless')
@@ -43,7 +45,24 @@ class SeleniumCookie(object):
         self.driver_ = webdriver.Chrome(chrome_options=option)
         self.driver_.get(self.url_)
         self.wait = WebDriverWait(self.driver_,timeout=15)
+        self.initSession()
+        self.path = os.path.dirname(os.path.abspath(__file__))  
         
+    def initSession(self):
+        self.session_=requests.Session()
+        self.headers_ = {'User-Agent':USER_AGENT,}
+        self.cookiejar_ = requests.cookies.RequestsCookieJar()
+        for item in COOKIES.split(';'):
+            name ,value = item.split('=',1)
+            self.cookiejar_.set(name,value)
+        pass
+
+    def reqImgSave(self,url,imgpath):
+        url.split('')
+        imgfile=self.session_.get(url,headers=self.headers_,timeout=5).content
+        with open(imgpath,'wb') as file:
+            file.write(imgfile)
+
     def login(self):
         self.driver_.delete_all_cookies()
         for item in COOKIES.split(';'):
@@ -128,8 +147,6 @@ class SeleniumCookie(object):
             self.driver_.close()
             self.switchWindow(0)
             pass
-        
-
     def switchWindow(self,index):
             #打开选项卡
         self.driver_.switch_to_window(self.driver_.window_handles[index])
@@ -137,6 +154,10 @@ class SeleniumCookie(object):
 
     def getItemPage2(self,itemelement):
         try:
+            dirname=itemelement.get_attribute('title').split('[',1)[0].replace(' ','').replace('/','').strip()
+            dirname=os.path.join(self.path,dirname)
+            if(os.path.exists(dirname)==False):
+                os.makedirs(dirname)
             actionChain = ActionChains(self.driver_)
             actionChain.context_click(itemelement).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ENTER).perform()
             time.sleep(2)
@@ -146,8 +167,10 @@ class SeleniumCookie(object):
             picliststr = "//ignore_js_op/descendant::img[@class='zoom']"
             picelements=self.wait.until(EC.presence_of_all_elements_located((By.XPATH,picliststr)))
             for picelement in picelements:
-                print(picelement.get_attribute('file'))
-                #time.sleep(1)
+                picaddr=picelement.get_attribute('file')
+                print(picaddr)
+                self.reqImgSave(picaddr,dirname)
+                time.sleep(1)
             self.driver_.close()
             self.switchWindow(0)
         except TimeoutException :
@@ -163,14 +186,12 @@ class SeleniumCookie(object):
             self.driver_.close()
             self.switchWindow(0)
             pass
-        
-       
-        
 
 if __name__ == "__main__":
     seleniumcookie = SeleniumCookie('https://www.aisinei.org/portal.php')
     seleniumcookie.login()
     seleniumcookie.findItemList()
+    
 
    
     
