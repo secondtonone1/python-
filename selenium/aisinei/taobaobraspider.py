@@ -58,9 +58,12 @@ class SeleniumCookie(object):
         pass
 
     def reqImgSave(self,url,imgpath):
-        url.split('')
+        imgname= url.split('/')[-1]
+        imgname=os.path.join(imgpath,imgname)
+        if(os.path.exists(imgname)):
+            return
         imgfile=self.session_.get(url,headers=self.headers_,timeout=5).content
-        with open(imgpath,'wb') as file:
+        with open(imgname,'wb') as file:
             file.write(imgfile)
 
     def login(self):
