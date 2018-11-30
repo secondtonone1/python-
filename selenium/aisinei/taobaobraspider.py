@@ -88,7 +88,7 @@ class SeleniumCookie(object):
             itemnode = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="portal_block_36_content"]')) )
             print(type(itemnode))   
             itemlist=itemnode.find_elements_by_tag_name('li')
-            for item in itemlist[1:]:
+            for item in itemlist[1:20]:
                 divtag=item.find_element_by_tag_name('div')
                 itemdata=divtag.find_element_by_tag_name('a')
                 #self.getItemPage(itemdata)
