@@ -29,13 +29,13 @@ class SeleniumCookie(object):
         self.load_cookie()
         self.refresh_page()
         self.wait = WebDriverWait(self.driver_,10)
+        
     def save_cookie(self):
         if(os.path.exists(self.cookiepath)):
             return
         time.sleep(60)
         with open (self.cookiepath,"wb") as f:
             pickle.dump(self.driver_.get_cookies(),f)
-        
 
     def load_cookie(self):
         self.driver_.delete_all_cookies()

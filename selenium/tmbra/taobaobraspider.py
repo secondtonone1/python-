@@ -14,6 +14,7 @@ from selenium.webdriver import ActionChains#引入动作链
 import pickle
 import os
 import sys
+USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0'
 COOKIES = '''cna=GckCFG0yEU4CASRm0NbUoE2C; x=__ll%3D-1%26_ato%3D0; otherx=e%3D1%26p%3D*%26s%3D0%26c%3D0%26f%3D0%26g%3D0%26t%3D0; tk_trace=1; 
 lid=crazy%E8%BE%B0; _m_h5_tk=1412a5bb70345e741316f6b4092c5a4b_1543555914351; _m_h5_tk_enc=ce02f0ef44994e6d42a14de452917595; 
 hng=CN%7Czh-CN%7CCNY%7C156; uc1=cookie16=VT5L2FSpNgq6fDudInPRgavC%2BQ%3D%3D&cookie21=V32FPkk%2FgihF%2FS5nr3O5&cookie15=UIHiLt3xD8xYTw%3D%3D&existShop=false&pas=0&cookie14=UoTYNc5wRClZhw%3D%3D&tag=8&lng=zh_CN; 
@@ -62,8 +63,19 @@ class SeleniumCookie(object):
             print('TimeoutException')
             #self.driver_.close()
         except:
-            print('exception')
-     
+            print(' close_dialog exception')
+
+    def initSession(self):
+        self.session_=requests.Session()
+        self.headers_ = {'User-Agent':USER_AGENT,}
+        self.cookiejar_ = requests.cookies.RequestsCookieJar()
+        for item in COOKIES.split(';'):
+            name ,value = item.split('=',1)
+            name=name.replace(' ','').replace('\r','').replace('\n','')
+            value = value.replace(' ','').replace('\r','').replace('\n','')
+            self.cookiejar_.set(name,value)
+        pass
+
     def initChromCookie(self):
         for item in COOKIES.split(';'):
             name,value = item.split('=',1)
@@ -101,7 +113,7 @@ class SeleniumCookie(object):
             print('TimeoutException')
             self.driver_.close()
         except:
-            print('exception')    
+            print('clickComment exception')    
             
         
        
