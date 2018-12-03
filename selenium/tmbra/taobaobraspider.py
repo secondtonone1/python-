@@ -37,6 +37,7 @@ class SeleniumCookie(object):
         #刷新页面
         self.refresh_page()
         self.wait = WebDriverWait(self.driver_,10)
+        self.initSession()
      
     def refresh_page(self):
         self.driver_.refresh()
@@ -49,14 +50,15 @@ class SeleniumCookie(object):
     
     def close_dialog(self):
         try:
-            comment = self.wait.until(EC.presence_of_element_located(By.XPATH,'/html/body/div[9]/div[2]'))
-            self.driver_.switch_to.frame('sufei-dialog-content')
+            comment = self.wait.until(EC.presence_of_element_located((By.XPATH,'/html/body/div[9]/div[2]')) )
+            #self.driver_.switch_to.frame('sufei-dialog-content')
             #self.driver_.switch_to.default_content()
             closebtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="sufei-dialog-close"]')) )
             closebtn.click()
             #也可以通过ActionChains双击实现
             #actions = ActionChains(self.driver_)
             #actions.double_click(closebtn).perform()
+            time.sleep(1)
         except NoSuchElementException:
             print('No Element')
         except TimeoutException :
@@ -64,6 +66,20 @@ class SeleniumCookie(object):
             #self.driver_.close()
         except:
             print(' close_dialog exception')
+
+    def close_dialogm(self):
+        try:
+            closebtn=self.driver_.find_element_by_xpath("//a[@class='sufei-tb-dialog-close sufei-tb-overlay-close']")
+            #closebtn = self.wait.until(EC.presence_of_element_located((By.XPATH,"//a[@class='sufei-tb-dialog-close sufei-tb-overlay-close']")) )
+            closebtn.click()
+        except NoSuchElementException:
+            print('No Element')
+            #self.driver_.close()
+        except TimeoutException :
+            print('TimeoutException')
+            #self.driver_.close()
+        except:
+            print('close_dialogm exception')    
 
     def initSession(self):
         self.session_=requests.Session()
@@ -100,12 +116,16 @@ class SeleniumCookie(object):
             comments.click()
             time.sleep(1)
             comentall  = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="J_Reviews"]/div/div[5]/span[1]' )  ) )
+            self.close_dialogm()
             #J_Reviews > div > div.rate-toolbar > span.rate-filter 
             #J_Reviews > div > div.rate-toolbar > span.rate-filter > label:nth-child(2)
             comentpic = comentall.find_element_by_css_selector('input:nth-child(5)')
             comentpic.click() 
-           
             time.sleep(1)
+            self.close_dialogm()
+            self.driver_.execute_script('window.scrollBy(0,1000)')
+            time.sleep(1)
+            self.getPhotos()
         except NoSuchElementException:
             print('No Element')
             self.driver_.close()
@@ -114,14 +134,66 @@ class SeleniumCookie(object):
             self.driver_.close()
         except:
             print('clickComment exception')    
-            
+
+    def getPhotos(self):
+        try:
+            waitcomment = self.wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='tm-rate-content']" ) ) )
+            commentss=self.driver_.find_elements_by_xpath("//div[@class='tm-rate-content']")
+            print(type(commentss))
+            print(len(commentss))
+            self.getPhoto(*commentss)
+        except NoSuchElementException:
+            print('No Element')
+        except TimeoutException :
+            print('TimeoutException')
+        except:
+            print('getPhoto exception')    
+            pass        
         
+    def getPhoto(self,*comentlist):
+        try:
+            for comments in comentlist:
+                print(len(comentlist))
+                print(type(comments))
+                desc=comments.find_element_by_class_name('tm-rate-fulltxt').text
+                if len(desc) == 0:
+                    desc='abcdef'
+                dirfix=desc[0:6]
+                dirname=os.path.join(self.path,dirfix)
+                if os.path.exists(dirname) == False:
+                    os.makedirs(dirname)
+                txtname=os.path.join(dirname,desc[0:6]+'.txt')
+                if os.path.exists(txtname) == False:
+                    with open (txtname,'w',encoding='utf-8') as file:
+                        file.write(desc)
+                photos=comments.find_element_by_class_name('tm-m-photos')
+                photos=photos.find_element_by_class_name('tm-m-photos-thumb')
+                photos=photos.find_elements_by_tag_name('li')
+                for ph in photos:
+                    phaddr=ph.get_attribute('data-src')
+                    print(phaddr)
+                    bigph=phaddr.split('_4')[0]
+                    print(bigph)
+                    imgname= os.path.join(dirname ,bigph.split('/')[-1])
+                    if os.path.exists(imgname) :
+                        continue
+                    img=self.session_.get('http:'+bigph,headers=self.headers_,cookies=self.cookiejar_).content
+                    with open (imgname,'wb') as imgfile:
+                        imgfile.write(img)
+        except NoSuchElementException:
+            print('No Element')
+        except TimeoutException :
+            print('TimeoutException')
+        except:
+            print('getPhoto exception')    
+            pass        
        
        
 if __name__ == "__main__":
     #seleniumcookie = SeleniumCookie('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
     seleniumcookie = SeleniumCookie('https://www.taobao.com')
     seleniumcookie.open_window('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
+    #seleniumcookie.open_window('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.5e102cc8DSY6im&id=574758949338&areaId=110100&standard=1&user_id=453032244&cat_id=2&is_b=1&rn=6ab2a630c59f4188b8a6061dde673e61')
     seleniumcookie.close_dialog()
     seleniumcookie.clickComment()
 
