@@ -125,7 +125,19 @@ class SeleniumCookie(object):
             self.close_dialogm()
             self.driver_.execute_script('window.scrollBy(0,1000)')
             time.sleep(1)
-            self.getPhotos()
+            nextpagebtn= self.wait.until(EC.element_to_be_clickable( (By.XPATH, '//*[contains(text(),"下一页")]')) )
+            lastpage = nextpagebtn.get_attribute('data-page')
+            while ( nextpagebtn ):
+                print('正在爬取第%d页'%(int(lastpage)-1))
+                self.getPhotos()
+                print('爬取第%d页成功'%(int(lastpage)-1))
+                nextpagebtn.click()
+                time.sleep(2)
+                nextpagebtn= self.wait.until(EC.element_to_be_clickable( (By.XPATH, '//*[contains(text(),"下一页")]')) )
+                curpage = nextpagebtn.get_attribute('data-page')
+                if(lastpage==curpage):
+                    break
+                lastpage = curpage
         except NoSuchElementException:
             print('No Element')
             self.driver_.close()
@@ -139,22 +151,22 @@ class SeleniumCookie(object):
         try:
             waitcomment = self.wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='tm-rate-content']" ) ) )
             commentss=self.driver_.find_elements_by_xpath("//div[@class='tm-rate-content']")
-            print(type(commentss))
-            print(len(commentss))
+            #print(type(commentss))
+            #print(len(commentss))
             self.getPhoto(*commentss)
         except NoSuchElementException:
             print('No Element')
         except TimeoutException :
             print('TimeoutException')
         except:
-            print('getPhoto exception')    
+            print('getPhotos exception!!!!')    
             pass        
         
     def getPhoto(self,*comentlist):
         try:
             for comments in comentlist:
-                print(len(comentlist))
-                print(type(comments))
+                #print(len(comentlist))
+                #print(type(comments))
                 desc=comments.find_element_by_class_name('tm-rate-fulltxt').text
                 if len(desc) == 0:
                     desc='abcdef'
@@ -178,8 +190,11 @@ class SeleniumCookie(object):
                     if os.path.exists(imgname) :
                         continue
                     img=self.session_.get('http:'+bigph,headers=self.headers_,cookies=self.cookiejar_).content
+                    print('正在爬取%s' %(bigph))
                     with open (imgname,'wb') as imgfile:
                         imgfile.write(img)
+                    print('爬取成功%s' %(bigph))
+                    time.sleep(2)
         except NoSuchElementException:
             print('No Element')
         except TimeoutException :
