@@ -16,7 +16,7 @@ http.client.HTTPConnection._http_vsn = 10
 http.client.HTTPConnection._http_vsn_str = 'HTTP/1.0'
 
 USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0'
-WEBHEAD = 'https://852ll.com/'
+WEBHEAD = 'https://5252ll.com/'
 contents=""
 class GetMMPic(object):
     def __init__(self,path):
@@ -25,7 +25,7 @@ class GetMMPic(object):
         # 去除尾部 \ 符号
         path = path.rstrip('\\')
         self.path = path
-        self.url = 'https://852ll.com/index.html'
+        self.url = 'https://5252ll.com/index.html'
         self.user_agent = USER_AGENT
     def makedir(self,dirname):
         joinpath = os.path.join(self.path,dirname)
