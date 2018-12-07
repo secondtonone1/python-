@@ -14,6 +14,7 @@ from selenium.webdriver import ActionChains#引入动作链
 import pickle
 import os
 import sys
+from datetime import datetime
 USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0'
 COOKIES = '''SINAGLOBAL=2649989373301.307.1534843664455; 
 UM_distinctid=1658a0b6124890-079f3bc67a0c5c-10724c6f-1fa400-1658a0b6125d94; 
@@ -47,6 +48,11 @@ class SeleniumCookie(object):
         #先加载网站
         self.driver_.get(self.url_)
         self.path=os.path.dirname(os.path.abspath(__file__))
+        now = datetime.now()
+        timestr=now.strftime('%Y%m%d')
+        self.path=os.path.join( self.path,timestr)
+        if os.path.exists(self.path)==False:
+            os.mkdir(self.path)
         self.wait = WebDriverWait(self.driver_,10)
         self.initSession()
         self.chromeLogin()
@@ -56,43 +62,10 @@ class SeleniumCookie(object):
 
     def open_window(self,urlnew):
         self.driver_.execute_script('window.open()')
-        self.driver_.switch_to_window(self.driver_.window_handles[1])
+        self.driver_.switch_to_window(self.driver_.window_handles[-1])
         self.driver_.get(urlnew)
         time.sleep(1)
     
-    def close_dialog(self):
-        try:
-            comment = self.wait.until(EC.presence_of_element_located((By.XPATH,'/html/body/div[9]/div[2]')) )
-            #self.driver_.switch_to.frame('sufei-dialog-content')
-            #self.driver_.switch_to.default_content()
-            closebtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="sufei-dialog-close"]')) )
-            closebtn.click()
-            #也可以通过ActionChains双击实现
-            #actions = ActionChains(self.driver_)
-            #actions.double_click(closebtn).perform()
-            time.sleep(1)
-        except NoSuchElementException:
-            print('No Element')
-        except TimeoutException :
-            print('TimeoutException')
-            #self.driver_.close()
-        except:
-            print(' close_dialog exception')
-
-    def close_dialogm(self):
-        try:
-            closebtn=self.driver_.find_element_by_xpath("//a[@class='sufei-tb-dialog-close sufei-tb-overlay-close']")
-            #closebtn = self.wait.until(EC.presence_of_element_located((By.XPATH,"//a[@class='sufei-tb-dialog-close sufei-tb-overlay-close']")) )
-            closebtn.click()
-        except NoSuchElementException:
-            print('No Element')
-            #self.driver_.close()
-        except TimeoutException :
-            print('TimeoutException')
-            #self.driver_.close()
-        except:
-            print('close_dialogm exception')    
-
     def initSession(self):
         self.session_=requests.Session()
         self.headers_ = {'User-Agent':USER_AGENT,}
@@ -103,7 +76,7 @@ class SeleniumCookie(object):
             value = value.replace(' ','').replace('\r','').replace('\n','')
             self.cookiejar_.set(name,value)
         pass
-
+    #弹窗保存cookies
     def saveCookies(self):
         js_code='alert(document.cookie)'
         self.driver_.execute_script(js_code)
@@ -111,7 +84,7 @@ class SeleniumCookie(object):
     def chromeLogin(self):
         try:
             self.driver_.maximize_window()
-            time.sleep(1)
+            time.sleep(5)
             loginname=self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginname"]') ) )
             loginname.click()
             #设置用户名输入框
@@ -122,54 +95,33 @@ class SeleniumCookie(object):
             password.send_keys('18301152001c')
             loginbtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[6]/a') ))
             loginbtn.click()
+            time.sleep(5)
             return True
-        except:
-            return False
-       
-    def clickComment(self):
-        try:
-            comments = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="J_TabBar"]/li[2]' ) ) )
-            comments.click()
-            time.sleep(1)
-            comentall  = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="J_Reviews"]/div/div[5]/span[1]' )  ) )
-            self.close_dialogm()
-            #J_Reviews > div > div.rate-toolbar > span.rate-filter 
-            #J_Reviews > div > div.rate-toolbar > span.rate-filter > label:nth-child(2)
-            comentpic = comentall.find_element_by_css_selector('input:nth-child(5)')
-            comentpic.click() 
-            time.sleep(1)
-            self.close_dialogm()
-            self.driver_.execute_script('window.scrollBy(0,1000)')
-            time.sleep(1)
-            nextpagebtn= self.wait.until(EC.element_to_be_clickable( (By.XPATH, '//*[contains(text(),"下一页")]')) )
-            lastpage = nextpagebtn.get_attribute('data-page')
-            while ( nextpagebtn ):
-                print('正在爬取第%d页'%(int(lastpage)-1))
-                self.getPhotos()
-                print('爬取第%d页成功'%(int(lastpage)-1))
-                nextpagebtn.click()
-                time.sleep(2)
-                nextpagebtn= self.wait.until(EC.element_to_be_clickable( (By.XPATH, '//*[contains(text(),"下一页")]')) )
-                curpage = nextpagebtn.get_attribute('data-page')
-                if(lastpage==curpage):
-                    break
-                lastpage = curpage
         except NoSuchElementException:
             print('No Element')
-            self.driver_.close()
+            return False
+            #self.driver_.close()
         except TimeoutException :
             print('TimeoutException')
-            self.driver_.close()
+            #self.driver_.close()
+            return False
         except:
-            print('clickComment exception')    
+            print('chromeLogin exception')
+            return False    
 
-    def getPhotos(self):
+    #网页可视区高度
+    def getcrollTop(self):
+        js = "var q=document.body.clientHeight ;return(q)" 
+        return self.driver_.execute_script(js) 
+    def getbottomHeight(self):
+        js = "var q=document.body.scrollHeight ;return(q)"
+        return self.driver_.execute_script(js)
+
+
+    def getPhotos(self,*photolist):
         try:
-            waitcomment = self.wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='tm-rate-content']" ) ) )
-            commentss=self.driver_.find_elements_by_xpath("//div[@class='tm-rate-content']")
-            #print(type(commentss))
-            #print(len(commentss))
-            self.getPhoto(*commentss)
+            for photoitem in photolist:
+                self.dealPhotoItem(photoitem)
         except NoSuchElementException:
             print('No Element')
         except TimeoutException :
@@ -177,55 +129,80 @@ class SeleniumCookie(object):
         except:
             print('getPhotos exception!!!!')    
             pass        
-        
-    def getPhoto(self,*comentlist):
+
+    def cycleScroll(self):
         try:
-            for comments in comentlist:
-                #print(len(comentlist))
-                #print(type(comments))
-                desc=comments.find_element_by_class_name('tm-rate-fulltxt').text
-                if len(desc) == 0:
-                    desc='abcdef'
-                dirfix=desc[0:6]
-                dirname=os.path.join(self.path,dirfix)
-                if os.path.exists(dirname) == False:
-                    os.makedirs(dirname)
-                txtname=os.path.join(dirname,desc[0:6]+'.txt')
-                if os.path.exists(txtname) == False:
-                    with open (txtname,'w',encoding='utf-8') as file:
-                        file.write(desc)
-                photos=comments.find_element_by_class_name('tm-m-photos')
-                photos=photos.find_element_by_class_name('tm-m-photos-thumb')
-                photos=photos.find_elements_by_tag_name('li')
-                for ph in photos:
-                    phaddr=ph.get_attribute('data-src')
-                    print(phaddr)
-                    bigph=phaddr.split('_4')[0]
-                    print(bigph)
-                    imgname= os.path.join(dirname ,bigph.split('/')[-1])
-                    if os.path.exists(imgname) :
-                        continue
-                    img=self.session_.get('http:'+bigph,headers=self.headers_,cookies=self.cookiejar_).content
-                    print('正在爬取%s' %(bigph))
-                    with open (imgname,'wb') as imgfile:
-                        imgfile.write(img)
-                    print('爬取成功%s' %(bigph))
-                    time.sleep(2)
+            bottom = self.getbottomHeight()
+            js = "var q=document.body.clientHeight;return(q)"
+            begin=0 
+            while(True):
+                jscode='window.scrollTo(0,document.body.scrollHeight)'
+                self.driver_.execute_script(jscode)
+                time.sleep(5)
+                photolist = self.wait.until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@class='photo_album_list clearfix']" ) ) )
+                photolen = len(photolist)
+                if(photolen == 0):
+                    break
+                if(photolen == begin):
+                    break
+                self.getPhotos(*photolist[begin:])
+                begin=begin+photolen
+                #判断是否到底部
+                cur = self.getcrollTop()
+                print('cur scroll top is %d' %(cur))
+                print('bottom scroll height is %d' %(bottom))
+                if(cur == bottom):
+                    break
         except NoSuchElementException:
             print('No Element')
         except TimeoutException :
             print('TimeoutException')
         except:
-            print('getPhoto exception')    
-            pass        
-       
+            print('cycleScroll exception!!!!')    
+   
+    
+    def savePhoto(self,dirname):
+        try:
+            srcitem=self.wait.until(EC.presence_of_element_located( (By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//img[@hidefocus]") )  )
+            imgaddr=srcitem.get_attribute('src')
+            imgname=os.path.join(dirname,imgaddr.split('/')[-1])
+            if os.path.exists(imgname)==False:
+                img=self.session_.get(imgaddr,headers=self.headers_, cookies=self.cookiejar_).content
+                with open(imgname,'wb') as imgfile:
+                    imgfile.write(img)
+            closebtn=self.wait.until(EC.presence_of_element_located((By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//*[@title='关闭']")))  
+            closebtn.click()
+        except:
+            pass
+
+    def dealPhotoItem(self,photoitem):
+        try:
+            dirname=photoitem.get_attribute('group_id')
+            photolist=photoitem.find_elements_by_xpath(".//img[contains(@class,'photo_pict')]")
+            if len(photolist) == 0:
+                return
+            print('photolist size is %d'%(len(photolist)))
+            dirname = os.path.join(self.path,dirname)
+            if os.path.exists(dirname)==False:
+                os.mkdir(dirname)
+            for photo in photolist:
+                photo.click()
+                time.sleep(2)
+                self.savePhoto(dirname)
+                
+        except NoSuchElementException:
+            print('No Element')
+        except TimeoutException :
+            print('TimeoutException')
+        except:
+            print('dealPhotoItem exception!!!!')    
        
 if __name__ == "__main__":
     #seleniumcookie = SeleniumCookie('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
     seleniumcookie = SeleniumCookie('https://weibo.com/')
-   
-
-   
+    #seleniumcookie.open_window('https://weibo.com/p/1005056392001684/photos?from=page_100505&mod=TAB#place')
+    seleniumcookie.open_window('https://weibo.com/p/1005055837812317/photos?from=page_100505&mod=TAB#place')
+    seleniumcookie.cycleScroll()
     
     
     
