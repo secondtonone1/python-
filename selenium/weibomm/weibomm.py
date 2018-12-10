@@ -172,9 +172,6 @@ class SeleniumCookie(object):
                 with open(imgname,'wb') as imgfile:
                     imgfile.write(img)
             print('成功抓取%s' %(imgname))
-            closebtn=self.wait.until(EC.element_to_be_clickable((By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//*[@title='关闭']")))  
-            closebtn.click()
-            time.sleep(2)
         except NoSuchElementException:
             print('No Element')
         except TimeoutException :
@@ -193,9 +190,12 @@ class SeleniumCookie(object):
             if os.path.exists(dirname)==False:
                 os.mkdir(dirname)
             for photo in photolist:
-                photo.click()
-                time.sleep(3)
-                self.savePhoto(dirname)
+                try:
+                    photo.click()
+                    time.sleep(3)
+                    self.savePhoto(dirname)
+                finally:
+                    self.closePhoto()
                 
         except NoSuchElementException:
             print('No Element')
@@ -203,13 +203,19 @@ class SeleniumCookie(object):
             print('TimeoutException')
         except:
             print('dealPhotoItem exception!!!!')    
-       
+
+    def closePhoto(self):
+        try:
+            closebtn=self.wait.until(EC.element_to_be_clickable((By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//*[@title='关闭']")))  
+            closebtn.click()
+            time.sleep(3)
+        except:
+            print('close Photo error!!')
+            pass
 if __name__ == "__main__":
     #seleniumcookie = SeleniumCookie('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
     seleniumcookie = SeleniumCookie('https://weibo.com/')
-    #seleniumcookie.open_window('https://weibo.com/p/1005056392001684/photos?from=page_100505&mod=TAB#place')
-    #seleniumcookie.open_window('https://weibo.com/p/1005055837812317/photos?from=page_100505&mod=TAB#place')
-    seleniumcookie.open_window('https://weibo.com/p/1005051839304432/photos?from=page_100505&mod=TAB#place')
+    seleniumcookie.open_window('https://weibo.com/p/1005052449335415/photos?from=page_100505&mod=TAB#place')
     seleniumcookie.cycleScroll()
     
     
