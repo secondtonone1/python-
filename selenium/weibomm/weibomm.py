@@ -163,18 +163,24 @@ class SeleniumCookie(object):
     
     def savePhoto(self,dirname):
         try:
-            srcitem=self.wait.until(EC.presence_of_element_located( (By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//img[@hidefocus]") )  )
+            srcitem=self.wait.until(EC.visibility_of_element_located( (By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//img[@hidefocus]") )  )
             imgaddr=srcitem.get_attribute('src')
             imgname=os.path.join(dirname,imgaddr.split('/')[-1])
+            print('开始抓取%s' %(imgname))
             if os.path.exists(imgname)==False:
                 img=self.session_.get(imgaddr,headers=self.headers_, cookies=self.cookiejar_).content
                 with open(imgname,'wb') as imgfile:
                     imgfile.write(img)
-            closebtn=self.wait.until(EC.presence_of_element_located((By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//*[@title='关闭']")))  
+            print('成功抓取%s' %(imgname))
+            closebtn=self.wait.until(EC.element_to_be_clickable((By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//*[@title='关闭']")))  
             closebtn.click()
-            time.sleep(1)
+            time.sleep(2)
+        except NoSuchElementException:
+            print('No Element')
+        except TimeoutException :
+            print('TimeoutException')
         except:
-            pass
+            print('savePhoto exception!!!!')    
 
     def dealPhotoItem(self,photoitem):
         try:
@@ -188,7 +194,7 @@ class SeleniumCookie(object):
                 os.mkdir(dirname)
             for photo in photolist:
                 photo.click()
-                time.sleep(2)
+                time.sleep(3)
                 self.savePhoto(dirname)
                 
         except NoSuchElementException:
