@@ -88,11 +88,11 @@ class SeleniumCookie(object):
             loginname=self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginname"]') ) )
             loginname.click()
             #设置用户名输入框
-            loginname.send_keys('18301152001')
+            loginname.send_keys('xxxxx')
             #设置密码
             password = self.wait.until(EC.presence_of_element_located( (By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input') )   )
             password.click()
-            password.send_keys('18301152001c')
+            password.send_keys('xxxxxx')
             loginbtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[6]/a') ))
             loginbtn.click()
             time.sleep(5)
@@ -134,7 +134,8 @@ class SeleniumCookie(object):
         try:
             bottom = self.getbottomHeight()
             js = "var q=document.body.clientHeight;return(q)"
-            begin=0 
+            begin=0
+            stop=False 
             while(True):
                 jscode='window.scrollTo(0,document.body.scrollHeight)'
                 self.driver_.execute_script(jscode)
@@ -144,7 +145,14 @@ class SeleniumCookie(object):
                 if(photolen == 0):
                     break
                 if(photolen == begin):
-                    break
+                    print('photolen == begin')
+                    if stop==True:
+                        break
+                    stop = True
+                    jscode2='window.scrollBy(0,2000)'
+                    self.driver_.execute_script(jscode2)
+                    time.sleep(5)
+                    continue
                 self.getPhotos(*photolist[begin:])
                 begin=photolen
                 #判断是否到底部
@@ -191,6 +199,12 @@ class SeleniumCookie(object):
                 os.mkdir(dirname)
             for photo in photolist:
                 try:
+                    photosrc=photo.get_attribute('src')
+                    print('photosrc is %s'%(photosrc) )
+                    if photosrc[-4:]== '.jpg':
+                        continue
+                    if photosrc[-4:]== '.png':
+                        continue
                     photo.click()
                     time.sleep(3)
                     self.savePhoto(dirname)
@@ -208,7 +222,11 @@ class SeleniumCookie(object):
         try:
             closebtn=self.wait.until(EC.element_to_be_clickable((By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//*[@title='关闭']")))  
             closebtn.click()
-            time.sleep(3)
+            time.sleep(2)
+        except NoSuchElementException:
+            print('closePhoto No Element')
+        except TimeoutException :
+            print('closePhoto TimeoutException') 
         except:
             print('close Photo error!!')
             pass
