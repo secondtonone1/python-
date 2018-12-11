@@ -88,11 +88,11 @@ class SeleniumCookie(object):
             loginname=self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginname"]') ) )
             loginname.click()
             #设置用户名输入框
-            loginname.send_keys('xxxxx')
+            loginname.send_keys('18301152001')
             #设置密码
             password = self.wait.until(EC.presence_of_element_located( (By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input') )   )
             password.click()
-            password.send_keys('xxxxxx')
+            password.send_keys('18301152001c')
             loginbtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[6]/a') ))
             loginbtn.click()
             time.sleep(5)
@@ -139,7 +139,7 @@ class SeleniumCookie(object):
             while(True):
                 jscode='window.scrollTo(0,document.body.scrollHeight)'
                 self.driver_.execute_script(jscode)
-                time.sleep(5)
+                time.sleep(10)
                 photolist = self.wait.until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@class='photo_album_list clearfix']" ) ) )
                 photolen = len(photolist)
                 if(photolen == 0):
@@ -151,7 +151,7 @@ class SeleniumCookie(object):
                     stop = True
                     jscode2='window.scrollBy(0,2000)'
                     self.driver_.execute_script(jscode2)
-                    time.sleep(5)
+                    time.sleep(10)
                     continue
                 self.getPhotos(*photolist[begin:])
                 begin=photolen
@@ -205,8 +205,8 @@ class SeleniumCookie(object):
                         continue
                     if photosrc[-4:]== '.png':
                         continue
-                    photo.click()
-                    time.sleep(3)
+                    if self.openPhoto(photo)==False:
+                        continue
                     self.savePhoto(dirname)
                 finally:
                     self.closePhoto()
@@ -218,6 +218,38 @@ class SeleniumCookie(object):
         except:
             print('dealPhotoItem exception!!!!')    
 
+    def openPhoto(self,photo):
+        try:  
+            photo.click()
+            time.sleep(3)
+            return True
+        except NoSuchElementException:
+            print('No Element')
+            return False
+        except TimeoutException :
+            print('TimeoutException')
+            return False
+        except:
+            print('openPhoto exception!!!!')
+            return False    
+
+    def closeSure(self):
+        try:
+            #self.driver_.find_elements_by_xpath("//div[@class='W_layer ']" ).click() 
+            surbtn = self.driver_.find_elements_by_xpath("//a[contains(@action-type,'ok')]" )
+            actions = ActionChains(self.driver_)
+            actions.key_down(Keys.ENTER).key_up(Keys.ENTER).perform()
+            #surbtn.click()
+            #surbtn.send_keys(Keys.ENTER)
+            #self.driver_.execute_script("arguments[0].click();", surbtn);
+            time.sleep(3)
+        except NoSuchElementException:
+            print('No Element')
+        except TimeoutException :
+            print('TimeoutException')
+        except:
+            print('closeSure exception!!!!')
+
     def closePhoto(self):
         try:
             closebtn=self.wait.until(EC.element_to_be_clickable((By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//*[@title='关闭']")))  
@@ -226,14 +258,16 @@ class SeleniumCookie(object):
         except NoSuchElementException:
             print('closePhoto No Element')
         except TimeoutException :
-            print('closePhoto TimeoutException') 
+            print('closePhoto TimeoutException')
+            self.closeSure() 
         except:
             print('close Photo error!!')
+            self.closeSure() 
             pass
 if __name__ == "__main__":
     #seleniumcookie = SeleniumCookie('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
     seleniumcookie = SeleniumCookie('https://weibo.com/')
-    seleniumcookie.open_window('https://weibo.com/p/1005052449335415/photos?from=page_100505&mod=TAB#place')
+    seleniumcookie.open_window('https://weibo.com/p/1005052864704214/photos?from=page_100505&mod=TAB#place')
     seleniumcookie.cycleScroll()
     
     
