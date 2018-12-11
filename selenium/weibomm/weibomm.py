@@ -88,11 +88,11 @@ class SeleniumCookie(object):
             loginname=self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginname"]') ) )
             loginname.click()
             #设置用户名输入框
-            loginname.send_keys('18301152001')
+            loginname.send_keys('XXXXXX')
             #设置密码
             password = self.wait.until(EC.presence_of_element_located( (By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input') )   )
             password.click()
-            password.send_keys('18301152001c')
+            password.send_keys('XXXXX')
             loginbtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[6]/a') ))
             loginbtn.click()
             time.sleep(5)
@@ -138,7 +138,8 @@ class SeleniumCookie(object):
             stop=False 
             while(True):
                 #jscode='window.scrollTo(0,document.body.scrollHeight)'
-                jscode='window.scrollBy(0,document.body.scrollHeight)'
+                #jscode='window.scrollBy(0,document.body.scrollHeight)'
+                jscode='window.scrollBy(0,5000)'
                 self.driver_.execute_script(jscode)
                 time.sleep(10)
                 photolist = self.wait.until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@class='photo_album_list clearfix']" ) ) )
