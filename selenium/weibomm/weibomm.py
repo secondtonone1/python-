@@ -88,11 +88,11 @@ class SeleniumCookie(object):
             loginname=self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginname"]') ) )
             loginname.click()
             #设置用户名输入框
-            loginname.send_keys('18301152001')
+            loginname.send_keys('xxxxxxxxxxxx')
             #设置密码
             password = self.wait.until(EC.presence_of_element_located( (By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input') )   )
             password.click()
-            password.send_keys('18301152001c')
+            password.send_keys('xxxxxxx')
             loginbtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[6]/a') ))
             loginbtn.click()
             time.sleep(5)
