@@ -207,8 +207,8 @@ class SeleniumCookie(object):
 if __name__ == "__main__":
     #seleniumcookie = SeleniumCookie('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
     seleniumcookie = SeleniumCookie('https://www.taobao.com')
-    seleniumcookie.open_window('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
-    #seleniumcookie.open_window('https://detail.tmall.com/item.htm?spm=a230r.1.14.52.71ee68e3MRe9OR&id=564158257528&ns=1&abbucket=19')
+    #seleniumcookie.open_window('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
+    seleniumcookie.open_window('https://detail.tmall.com/item.htm?spm=a1z10.3-b-s.w4011-14466875947.288.48b1e2afDwQjMa&id=44530629386&rn=d8322d2c37f5f5becd468ba8e5d37529')
     seleniumcookie.close_dialog()
     seleniumcookie.clickComment()
 
