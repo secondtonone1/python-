@@ -29,7 +29,7 @@ SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W5uTk4Kxuonmhpxb9WRPNqJ5JpX5K2hUgL.Fo2R1Kq
 SUHB=0jBJD2CO2AYKVH; ALF=1575612408; un=secondtonone1@163.com; YF-Page-G0=0dccd34751f5184c59dfe559c12ac40a; wb_view_log_1896412633=1920*10801; 
 wb_timefeed_1896412633=1; 
 UOR=v.ifeng.com,widget.weibo.com,www.baidu.com'''
-
+SRCTYPES=['.jpg','.png','.gif']
 class SeleniumCookie(object):
     def __init__(self,url):
         option = webdriver.ChromeOptions()
@@ -88,11 +88,11 @@ class SeleniumCookie(object):
             loginname=self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginname"]') ) )
             loginname.click()
             #设置用户名输入框
-            loginname.send_keys('18301153007')
+            loginname.send_keys('18301152001')
             #设置密码
             password = self.wait.until(EC.presence_of_element_located( (By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input') )   )
             password.click()
-            password.send_keys('18301153007cb')
+            password.send_keys('18301152001c')
             loginbtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[6]/a') ))
             loginbtn.click()
             time.sleep(5)
@@ -117,7 +117,7 @@ class SeleniumCookie(object):
         js = "var q=document.body.scrollHeight ;return(q)"
         return self.driver_.execute_script(js)
 
-
+    #处理一个相簿里的图片列表
     def getPhotos(self,*photolist):
         try:
             for photoitem in photolist:
@@ -169,13 +169,34 @@ class SeleniumCookie(object):
             print('TimeoutException')
         except:
             print('cycleScroll exception!!!!')    
-   
-    
-    def savePhoto(self,dirname):
+    #获取资源类型
+    def getSrcType(self,photosrc):
+        global SRCTYPES
+        for type in SRCTYPES:
+            if photosrc.find(type)!=-1:
+                return type
+        return None
+    #根据资源类型获取xpath选择器
+    def getSrcaddrByType(self,srctype):
         try:
-            srcitem=self.wait.until(EC.visibility_of_element_located( (By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//img[@hidefocus]") )  )
-            imgaddr=srcitem.get_attribute('src')
-            imgname=os.path.join(dirname,imgaddr.split('/')[-1])
+            if(srctype=='.gif'):
+                srcitem=self.wait.until(EC.visibility_of_element_located( (By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//div[@node-type='gif_box']//video") )  )
+                return srcitem.get_attribute('src')
+            else:
+                srcitem=self.wait.until(EC.visibility_of_element_located( (By.XPATH,"//div[contains(@class,'W_layer layer_multipic_preview')]//img[@hidefocus]") )  )
+                return srcitem.get_attribute('src')
+        except:
+            return None
+    #保存图片
+    def savePhoto(self,photosrc,dirname):
+        try:
+            srctype=self.getSrcType(photosrc)
+            if srctype is None:
+                return
+            imgaddr = self.getSrcaddrByType(srctype)
+            if imgaddr is None:
+                return
+            imgname=os.path.join(dirname,imgaddr.split('?',1)[0].split('/')[-1])
             print('开始抓取%s' %(imgname))
             if os.path.exists(imgname)==False:
                 img=self.session_.get(imgaddr,headers=self.headers_, cookies=self.cookiejar_).content
@@ -189,6 +210,7 @@ class SeleniumCookie(object):
         except:
             print('savePhoto exception!!!!')    
 
+    #处理图片列表，一个相簿里的
     def dealPhotoItem(self,photoitem):
         try:
             dirname=photoitem.get_attribute('group_id')
@@ -209,7 +231,7 @@ class SeleniumCookie(object):
                         continue
                     if self.openPhoto(photo)==False:
                         continue
-                    self.savePhoto(dirname)
+                    self.savePhoto(photosrc,dirname)
                 finally:
                     self.closePhoto()
                 
@@ -269,7 +291,7 @@ class SeleniumCookie(object):
 if __name__ == "__main__":
     #seleniumcookie = SeleniumCookie('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
     seleniumcookie = SeleniumCookie('https://weibo.com/')
-    seleniumcookie.open_window('https://weibo.com/p/1005053179388954/photos?from=page_100505&mod=TAB#place')
+    seleniumcookie.open_window('https://weibo.com/p/1005052449335415/photos?from=page_100505&mod=TAB#place')
     seleniumcookie.cycleScroll()
     
     
