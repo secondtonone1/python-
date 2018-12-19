@@ -172,16 +172,20 @@ class SeleniumCookie(object):
         try:
             photolist=photoitem.find_elements_by_xpath(".//li[@class='img']")
             for photo in photolist:
+                photoid=photo.get_attribute('id')
+                photodir=os.path.join(self.path,photoid)
+                if os.path.exists(photodir) ==False:
+                    os.mkdir(photodir)
                 photo.click()
                 time.sleep(3)
                 self.driver_.switch_to_window(self.driver_.window_handles[-1])
                 jscode='window.scrollTo(0,document.body.scrollHeight)'
                 self.driver_.execute_script(jscode)
-                time.sleep(3)
-                self.driver_.execute_script(jscode)
-                time.sleep(3)
+                time.sleep(5)
+                #self.driver_.execute_script(jscode)
+                #time.sleep(3)
                 elements=self.wait.until(EC.presence_of_all_elements_located((By.XPATH, "//a[contains(@class,'imgclasstag')]" ) ) )
-                self.savePhoto(*elements)
+                self.savePhoto(photodir,*elements)
                 self.driver_.close()
                 self.driver_.switch_to_window(self.driver_.window_handles[-1])    
         except NoSuchElementException:
@@ -191,7 +195,7 @@ class SeleniumCookie(object):
         except:
             print('dealPhotoItem exception!!!!')    
 
-    def savePhoto(self,*elementlist):
+    def savePhoto(self,photodir,*elementlist):
         try:
             for element in elementlist:
                 imgaddr=element.get_attribute('bigimgsrc')
@@ -199,8 +203,16 @@ class SeleniumCookie(object):
                 srctype=self.getSrcType(imgaddr,*SRCTYPES)
                 if srctype is None:
                     continue
-                imgname=imgaddr.split(srctype,1)[0].split('/')[-1]
-                print('photo name is %s'   %(imgname+srctype))
+                imgname=imgaddr.split(srctype,1)[0].split('/')[-1]+srctype
+                print('photo name is %s'   %(imgname))
+                imgdir=os.path.join(photodir,imgname)
+                if os.path.exists(imgdir)==True:
+                    continue
+                print('正在爬取%s'%(imgname))
+                imgdata=self.session_.get(imgaddr,headers=self.headers_, cookies=self.cookiejar_).content
+                with open(imgdir,'wb') as imgfile:
+                    imgfile.write(imgdata)
+                print('爬取成功%s'%(imgname))
         except:    
             print('savePhoto exception')
     
@@ -214,7 +226,7 @@ class SeleniumCookie(object):
 if __name__ == "__main__":
     #seleniumcookie = SeleniumCookie('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
     seleniumcookie = SeleniumCookie('http://www.lofter.com/login?urschecked=true')
-    seleniumcookie.open_window('http://sifanduizhangf8.lofter.com/view')
+    seleniumcookie.open_window('http://siwa-gif.lofter.com/view')
     seleniumcookie.cycleScroll()
     
     
