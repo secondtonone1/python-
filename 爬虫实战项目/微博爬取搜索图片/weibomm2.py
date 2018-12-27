@@ -132,7 +132,7 @@ class SeleniumCookie(object):
     #下一页按钮
     def getNextBtn(self):
         try:
-            nextpage = self.wait.until(EC.presence_of_all_elements_located((By.XPATH, "//a[contains(text(),'下一页')]" ) ) )
+            nextpage = self.wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(),'下一页')]" ) ) )
             return nextpage
         except NoSuchElementException:
             print('No Element')
@@ -256,6 +256,7 @@ class SeleniumCookie(object):
                 bottom = self.getbottomHeight()
                 js = "var q=document.body.clientHeight;return(q)"
                 scrolltimes=0
+                nextbtn=None
                 while(True):
                     if scrolltimes==5:
                         break
@@ -270,7 +271,10 @@ class SeleniumCookie(object):
                 if nextbtn is None:
                     break
                 self.getWeiBoList()
-                nextbtn.click()
+                self.driver_.switch_to_window(self.driver_.window_handles[-1])
+                self.driver_.execute_script("arguments[0].scrollIntoView();", nextbtn)
+                #nextbtn.click()
+                nextbtn.send_keys(Keys.ENTER)
                 time.sleep(5)    
                
         except NoSuchElementException:
