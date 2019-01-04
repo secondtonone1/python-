@@ -40,20 +40,16 @@ class ZhihuScrapy(object):
         now = datetime.now()
         timestr=now.strftime('%Y%m%d')
         self.path=os.path.join( self.path,timestr)
+        self.nindex_=0
         if os.path.exists(self.path)==False:
             os.mkdir(self.path)
-    def getData(self):
+
+    def getPicData(self,rspdata):
         try:
-            response=self.session_.get(self.url_,headers=self.headers_, cookies=self.cookiejar_)
-            #print(response.encoding)
-            #print(response.text)
-            #rspdata = json.loads(response.text)
-            rspdata = response.json()
-            #print(rspdata)
-            nindex=0
             for data in rspdata.get('data'):
-                nindex= nindex+1
-                indexpath=os.path.join(self.path,str(nindex))
+                self.nindex_ = self.nindex_+1
+                print('正在爬取第%d项'%(self.nindex_))
+                indexpath=os.path.join(self.path,str(self.nindex_))
                 if os.path.exists(indexpath) == False:
                     os.mkdir(indexpath)
                 #print(data.get('content'))
@@ -71,18 +67,46 @@ class ZhihuScrapy(object):
                     if imgaddr is None:
                         continue
                     imgpath=os.path.join(indexpath,imgaddr.split('/')[-1])
+                    print('正在爬取%s'%(imgaddr.split('/')[-1]))
                     if os.path.exists(imgpath) == True:
+                        print('爬取%s'%(imgaddr.split('/')[-1]))
                         continue
                     imgfiledata=self.session_.get(imgaddr,headers=self.headers_, cookies=self.cookiejar_).content
+                    time.sleep(1)
                     with open (imgpath,'wb') as imgfile:
                         imgfile.write(imgfiledata)
+                    print('爬取%s'%(imgaddr.split('/')[-1]))
+                print('爬取第%d项成功'%(self.nindex_))
+        except:
+            pass
+    def getData(self):
+        try:
+            while True:
+                response=self.session_.get(self.url_,headers=self.headers_, cookies=self.cookiejar_)
+                time.sleep(1)
+                #print(response.encoding)
+                #print(response.text)
+                #rspdata = json.loads(response.text)
+                rspdata = response.json()
+                #print(rspdata)
+                self.getPicData(rspdata)
+                #可以去掉，我只想爬取前30项
+                if self.nindex_ >30:
+                    break
+                if rspdata.get('paging').get('is_end') == True:
+                    break
+                self.url_= rspdata.get('paging').get('next')
+                if self.url_ is None:
+                    break
+                
         except:
             print('getData except!!!')
 
 
 if __name__ == "__main__":
     #zhihu = ZhihuScrapy('https://www.zhihu.com/api/v4/questions/58498720/answers',20)
-    zhihu = ZhihuScrapy('https://www.zhihu.com/api/v4/questions/265767940/answers',100)
+    #zhihu = ZhihuScrapy('https://www.zhihu.com/api/v4/questions/265767940/answers',20)
+    zhihu = ZhihuScrapy('https://www.zhihu.com/api/v4/questions/268409414/answers',20)
     zhihu.getData()
     pass
     
