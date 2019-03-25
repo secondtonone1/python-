@@ -291,10 +291,9 @@ class SeleniumCookie(object):
 if __name__ == "__main__":
     #seleniumcookie = SeleniumCookie('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
     seleniumcookie = SeleniumCookie('https://weibo.com/')
-    seleniumcookie.open_window('https://weibo.com/p/1005056409538840/photos?from=page_100505&mod=TAB#place')
+    seleniumcookie.open_window('https://weibo.com/p/1005052266073485/photos?from=page_100505&mod=TAB#place')
     seleniumcookie.cycleScroll()
     
- 张丹丹  18075132057
    
     
     
