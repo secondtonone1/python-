@@ -102,7 +102,7 @@ class DownloadFrame(BasicFrame):
                 pass
             else:
                 title = titles[0]
-            titlelist = re.split(r'[;,-|\s]',title)
+            titlelist = re.split(r'[;,\s]',title)
             title = titlelist[0]
             print(title)
             curdir = os.path.dirname(os.path.abspath(__file__))
@@ -124,10 +124,11 @@ class DownloadFrame(BasicFrame):
     def downloadPic(self, urls, path):
 
         # 每过三秒检查一次当前正在运行的线程数，超标则沉睡等待线程结束
+        '''
         while threading.activeCount() > 5:
             print("线程超标---%s" % threading.activeCount())
             time.sleep(3)
-
+        '''
         for url in urls:
             if url:
                 print(url)
@@ -139,7 +140,8 @@ class DownloadFrame(BasicFrame):
         try:
             if lock.acquire():
                 self.name += 1
-                filename = "%s\\%s.%s" % (path, self.name, url.split('.')[-1])
+                imgname = str(self.name)+'.'+url.split('.')[-1]
+                filename = os.path.join(path,imgname)
                 lock.release()
                 print(url)
                 print(filename)
