@@ -151,15 +151,14 @@ class DownloadFrame(BasicFrame):
                     f.write(res.content)
             # 下载完后检查是否完成下载
             if lock.acquire():
-                  if self.flag:
+                if self.flag:
                     self.flag = False
                     messagebox.showinfo("提示", "下载完成")
+                lock.release()
+
 
         except Exception as e:
             print(e)
-            if lock.acquire():
-                self.cnt -= 1
-                lock.release()
 
 
 
