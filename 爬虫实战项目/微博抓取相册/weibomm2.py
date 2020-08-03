@@ -92,10 +92,15 @@ class SeleniumCookie(object):
             #设置密码
             password = self.wait.until(EC.presence_of_element_located( (By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input') )   )
             password.click()
+            password.send_keys('')
             password.send_keys('18301152001c')
             loginbtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="pl_login_form"]/div/div[3]/div[6]/a') ))
             loginbtn.click()
-            time.sleep(5)
+            validbtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="dmCheck"]') ))
+            validbtn.click()
+            sendvalidbtn = self.wait.until(EC.presence_of_element_located((By.XPATH,'//*[@id="send_dm_btn"]') ))
+            sendvalidbtn.click()
+            time.sleep(20)
             return True
         except NoSuchElementException:
             print('No Element')
@@ -291,7 +296,7 @@ class SeleniumCookie(object):
 if __name__ == "__main__":
     #seleniumcookie = SeleniumCookie('https://detail.tmall.com/item.htm?spm=a220m.1000858.1000725.1.2e0d63ffvOPH2N&id=575198548137&skuId=3774938064975&areaId=110100&user_id=1644123097&cat_id=2&is_b=1&rn=a2781533c3ad59ab4c24d1f4246113b2')
     seleniumcookie = SeleniumCookie('https://weibo.com/')
-    seleniumcookie.open_window('https://weibo.com/p/1005052266073485/photos?from=page_100505&mod=TAB#place')
+    seleniumcookie.open_window('https://weibo.com/p/1005052760817614/photos?from=page_100505&mod=TAB#place')
     seleniumcookie.cycleScroll()
     
    
