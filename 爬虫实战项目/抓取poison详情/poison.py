@@ -25,96 +25,19 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver import ActionChains
 from datetime import datetime
+from queue import Queue
+import threading
+import queue
 
-class MyGui(object):
-    def __init__(self,init_window_name):
-        self.init_window_name=init_window_name
-
-    def set_init_window(self):
-        self.init_window_name.title("毒详情抓取工具")
-        self.init_window_name.geometry('540x320+10+10')
-        self.init_data_label = Label(self.init_window_name, text="详情链接")
-        self.init_data_label.grid(row=0, column=0)
-      
-
-        self.result_link_label = Label(self.init_window_name, text="==>")
-        self.result_link_label.grid(row=0, column=20)
-
-        self.result_data_label = Label(self.init_window_name, text="抓取结果")
-        self.result_data_label.grid(row=0, column=28)
-
-        #文本框
-        self.init_data_Text = Text(self.init_window_name, width=30, height=10)  #链接地址
-        self.init_data_Text.grid(row=1, column=0, rowspan=5, columnspan=5)
-        self.result_data_Text = Text(self.init_window_name, width=30, height=10)  #链接结果
-        self.result_data_Text.grid(row=1, column=26, rowspan=5, columnspan=5)
-       
-        
-        #开始抓取按钮
-        self.copy_calculate_btn = Button(self.init_window_name, text="开始抓取", bg="lightblue", 
-        width=20,command=self.copy_calculate_func)# 调用内部方法  加()为直接调用
-        self.copy_calculate_btn.grid(row=26, column=0, rowspan=5)
-
-        self.copy_enable = True
-
-    #分类回调函数
-    def copy_calculate_func(self):
-        if self.copy_enable == False:
-            return
-        self.copy_enable = False
-        self.result_data_Text.delete('0.0','end')
-        try:
-            res_link = self.init_data_Text.get('0.0','end')
-            print("res link  is ", res_link)
-            if res_link==None or res_link=="":
-                print("res link is empty")
-                return
-            threadPool.submit(save_res, res_link)
-        except Exception as e:
-            print("exception is ", repr(e))
-        finally:
-            self.result_data_Text.delete('0.0','end')
-            self.init_data_Text.delete('0.0','end')
-
-def gui_start():
-    init_window = Tk()              #实例化出一个父窗口
-    ZMJ_PORTAL = MyGui(init_window)
-    # 设置根窗口默认属性
-    ZMJ_PORTAL.set_init_window()
-
-    init_window.mainloop()          #父窗口进入事件循环，可以理解为保持窗口运行，否则界面不展示
-
-# res_data ResData
-# res_link表示资源链接
-def save_res(res_link):
-    driver.get_url(res_link)
-    driver.cycleScroll()
-    #实例化session
-    # session = requests.session()
-    # req_header = {
-    #     'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) \
-    #     Chrome/75.0.3770.100 Safari/537.36',
-    # }
-    
-    #response = session.get(res_link, headers=req_header)
-    #print(response.text)
-    #response = session.get('https://app.poizon.com/api/v1/h5/index/fire/flow/product/detail',headers=req_header)
-    #print(response.text)
-    return 'finished'
 
 class SeleniumDriver(object):
-    def __init__(self):
+    def __init__(self, path):
         options = webdriver.ChromeOptions() 
         options.add_argument('--ignore-certificate-errors') 
         options.add_argument('--ignore-ssl-errors') 
 
         self.driver_ = webdriver.Chrome(chrome_options=options)
-        self.path=os.path.dirname(os.path.abspath(__file__))
-        now = datetime.now()
-        timestr=now.strftime('%Y%m%d')
-        self.path=os.path.join( self.path,timestr)
-        if os.path.exists(self.path)==False:
-            os.mkdir(self.path)
+        self.path = path
         self.wait = WebDriverWait(self.driver_,10)
         #self.saveCookies()
     def refresh_page(self):
@@ -153,6 +76,7 @@ class SeleniumDriver(object):
             js = "var q=document.body.clientHeight;return(q)"
             begin=0
             stop= 0
+            temp = 0
             while(True):
                 print('*************')
                 jscode='window.scrollBy(0,50000)'
@@ -167,15 +91,182 @@ class SeleniumDriver(object):
                     continue
                 print(recommand)
                 list_infos = recommand.find_elements_by_class_name('list-info')
-                print(list_infos)
+                if temp == len(list_infos):
+                    break
+                temp = len(list_infos)
+                #print(list_infos)
         except NoSuchElementException:
             print('No Element')
         except TimeoutException :
             print('TimeoutException')
         except Exception as e:
-            print('cycleScroll exception!!!! error is ', e)    
+            print('cycleScroll exception!!!! error is ', e)
+
+    #品牌   主货号   品名    销量   颜色   码数  价格  下单日期  发货日期
+    def get_detail(self):
+        try:
+            title = self.driver_.find_element_by_xpath('//*[@id="product"]/uni-view[4]/uni-view[1]/uni-view[2]/uni-text/span')
+            print("title is ", title)
+            if title == None:
+                return
+            print("title text is ", title.text)
+
+            dir_path = os.path.join(self.path, title.text)
+            if os.path.exists(dir_path) == False:
+                os.mkdir(dir_path)
+
+            detail_txt_path  = os.path.join(dir_path, title.text+".txt")
+            detail_txt=open(detail_txt_path, "a",encoding='utf-8')
+            detail_txt.write("品牌 {} \n" .format(title.text))
+            price = self.driver_.find_element_by_xpath('//*[@id="product"]/uni-view[4]/uni-view[1]/uni-view[3]/uni-view/uni-text[2]/span')
+            if price != None:
+                detail_txt.write("价格 {} \n" .format(price.text))
+            self.cycleScroll()
+            element_find = self.driver_.find_element_by_xpath('//*[@id="product"]/uni-view[4]/uni-view[10]/uni-view[2]')
+            if element_find != None:
+                extra_lists = element_find.find_elements_by_class_name('extra-list')
+                print("extra_lists are : ", extra_lists)
+                for extra_data in extra_lists:
+                    extra_title = extra_data.find_element_by_class_name('extra-list-title')
+                    extra_info = extra_data.find_element_by_class_name('extra-list-info')
+                    detail_txt.write(extra_title.text + ": " + extra_info.text) 
+                    print('extra-list-title is ', extra_title.text)
+                    print('extra-list-info is ', extra_info.text)
+                    detail_txt.write('\n')
+            
+            try:
+                detail_txt.write('尺码对照表: \n')
+                detail_txt.write("=======================\n")
+                size_info = self.driver_.find_element_by_xpath(
+                    '//*[@id="product"]/uni-view[4]/uni-view[10]/uni-view[8]/uni-view/uni-view[2]/uni-view')
+                report_info_list = size_info.find_elements_by_class_name('size-report-info')
+                for report_info in report_info_list:
+                    size_key_list = report_info.find_elements_by_class_name('size-key')
+                    for size_key in size_key_list:
+                        size_element = size_key.find_element_by_css_selector('span')
+                        detail_txt.write(size_element.text + '   ')
+                    detail_txt.write('\n')
+                detail_txt.write("=======================\n")
+            except Exception as e:
+                print("catch ruler exception is ", e)
+            
+            near_buy = self.driver_.find_element_by_xpath('//*[@id="product"]/uni-view[4]/uni-view[7]/uni-view/uni-view[1]/uni-view[1]')
+            desc = near_buy.find_element_by_class_name('desc')
+            detail_txt.write(near_buy.text + " : " + desc.text +'\n')
+
+            img_father = self.driver_.find_element_by_xpath('//*[@id="product"]/uni-view[4]/uni-view[9]/uni-view/uni-view[2]')
+            img_lists = img_father.find_elements_by_css_selector('img')
+            
+            buyer_show = os.path.join(dir_path, '买家秀')
+            if os.path.exists(buyer_show) == False:
+                os.mkdir(buyer_show)
+            img_index = 0
+            for img in img_lists :
+                img_url = img.get_attribute('src')
+                img_index = img_index + 1
+                img_name = str(img_index)+'.webp'
+                img_path = os.path.join(buyer_show, img_name)
+                rsp = requests.get(img_url)
+                with open(img_path, 'wb') as img_file:
+                    img_file.write(rsp.content)
+                #print('img_url is ', img_url)
+            sell_show = os.path.join(dir_path, '商品样图')
+            if os.path.exists(sell_show) == False:
+                os.mkdir(sell_show)
+            sell_img = self.driver_.find_element_by_xpath('//*[@id="product"]/uni-view[4]/uni-view[10]/uni-view[5]/uni-image/img')
+            sell_img_url = sell_img.get_attribute('src')
+            print('sell img url is ', sell_img_url)
+            rsp = requests.get(sell_img_url)
+            sell_img_path = os.path.join(sell_show,  'sell.jpg')
+            with open(sell_img_path, 'wb') as sell_img_file:
+                sell_img_file.write(rsp.content)
+
+
+        except Exception as e:
+            print("exception is ", e)
+        finally:
+            detail_txt.close()
+       
+    #滚动直到某个元素出现
+    def scrollBy_find(self,xpath):
+        failes = 0
+        while self.driver_.find_element_by_xpath(xpath) == None :
+            if failes >= 3:
+                break
+            jscode='window.scrollBy(0,5000)'
+            self.driver_.execute_script(jscode)
+            time.sleep(1)
+            failes = failes + 1
+        print("failes is ", failes)
+        element = self.driver_.find_element_by_xpath(xpath)
+        print("element is ", element)
+        return element    
+
+
+class ReadFile(object):
+    def __init__(self):
+        self.data_path = os.path.dirname(os.path.abspath(__file__))
+        self.data_path = os.path.join(self.data_path, "data.txt")
+        #print(self.data_path) 
+        pass
+    def file_path(self):
+        return self.data_path
+
+class WriteFile(object):
+    def __init__(self):
+        self.path=os.path.dirname(os.path.abspath(__file__))
+        now = datetime.now()
+        timestr=now.strftime('%Y%m%d')
+        self.path=os.path.join( self.path,timestr)
+        if os.path.exists(self.path)==False:
+            os.mkdir(self.path)
+    def get_path(self):
+        return self.path
+
+
+
+def run_thread(n):
+    print("thread %d begin work" %(n))
+    
+    chrome_driver = SeleniumDriver(write_file.get_path())
+    while True:
+        try:
+            task = url_que.get(block=True, timeout=3)
+            print(task)
+            url_que.task_done()
+            chrome_driver.open_window(task)
+            #chrome_driver.cycleScroll()
+            chrome_driver.get_detail()
+        except queue.Empty:
+            print('队列为空，get失败')
+            break
+        except Exception as e:
+            print("exception is ", e)
+            chrome_driver.quit_window()
+            break
 
 if __name__ == "__main__":
+    read_file = ReadFile()
+    write_file = WriteFile()
+    url_que = Queue(maxsize=0)
+    with open(read_file.file_path(), "r") as rd_file:
+        lines = rd_file.readlines()
+        for line in lines:
+            if line == "" or line.replace('\n', '').replace('\r', '') == "":
+                continue
+            #print("line data is ", line)
+            url_que.put(line)
+            #测试一行文本用
+            #break
+
+    t1 = threading.Thread(target=run_thread, args=(1,))
+    # t2 = threading.Thread(target=run_thread, args=(2,))
+    t1.start()
+   # t2.start()
+    t1.join()
+   # t2.join()
+    url_que.join()
+    '''
     #web driver
     driver = SeleniumDriver()
     print(driver.getcrollTop())
@@ -183,7 +274,6 @@ if __name__ == "__main__":
 
     #启动线程池
     threadPool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="saveres_")
-    #启动图形库
-    gui_start()
     #关闭线程池
     threadPool.shutdown(wait=True)
+    '''
