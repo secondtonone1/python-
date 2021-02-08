@@ -137,8 +137,9 @@ class SeleniumDriver(object):
             try:
                 detail_txt.write('尺码对照表: \n')
                 detail_txt.write("=======================\n")
-                size_info = self.driver_.find_element_by_xpath(
-                    '//*[@id="product"]/uni-view[4]/uni-view[10]/uni-view[8]/uni-view/uni-view[2]/uni-view')
+                size_info = self.driver_.find_element_by_css_selector(
+                    '.size-report-info-box')
+                    
                 report_info_list = size_info.find_elements_by_class_name('size-report-info')
                 for report_info in report_info_list:
                     size_key_list = report_info.find_elements_by_class_name('size-key')
