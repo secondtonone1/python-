@@ -21,10 +21,17 @@ class SheepUpdate:
         }
         self.headers = headers
         cur_dir = os.path.dirname(__file__)
-        log_path = os.path.join(cur_dir, "example.log")
-        logging.basicConfig(filename='info.log', level=logging.DEBUG, encoding='utf-8')
+        log_path = os.path.join(cur_dir, "info.log")
+        logging.basicConfig(filename=log_path, level=logging.DEBUG, encoding='utf-8')
         print(log_path)
         print("羊了个羊")
+
+    #获取token
+    def get_info(self):
+        #url = f"https://cat-match.easygame2021.com/sheep/v1/game/user_info?uid={68008486}"
+        url = f"http://cat-match.easygame2021.com/sheep/v1/game/user_info?uid={68205154}"
+        res = requests.get(url,headers=self.headers)
+        print(res.text)
 
     #每日话题加入羊群
     def join_sheep(self):
@@ -33,10 +40,10 @@ class SheepUpdate:
         print(res.text)
     
     #更新通关次数
-    def update_res(self, count=1,seconds=0):
+    def update_res(self, bverify ,count=1,seconds=0):
         time.sleep(seconds)
         response = requests.get(
-            f'https://cat-match.easygame2021.com/sheep/v1/game/game_over?rank_score=1&rank_state=1&rank_time={random.randint(1, 3600)}&rank_role=1&skin=1', headers=self.headers, timeout=10, verify=True)
+            f'https://cat-match.easygame2021.com/sheep/v1/game/game_over?rank_score=1&rank_state=1&rank_time={random.randint(1, 3600)}&rank_role=1&skin=4', headers=self.headers, timeout=100, verify=bverify)
         if response == None:
             print("response is none")
             logging.info("response is none")
@@ -62,9 +69,17 @@ class SheepUpdate:
             pass
         pool.shutdown()
 
+
+    #获取地图
+    def get_map(self):
+        url = f"http://cat-match.easygame2021.com/sheep/v1/game/map_info_ex?matchType=3"
+        res = requests.get(url,headers=self.headers)
+        print(res.text)
+
 if __name__ == "__main__":
     token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQ1MDY5ODEsIm5iZiI6MTY2MzQwNDc4MSwiaWF0IjoxNjYzNDAyOTgxLCJqdGkiOiJDTTpjYXRfbWF0Y2g6bHQxMjM0NTYiLCJvcGVuX2lkIjoiIiwidWlkIjo2ODIwNTE1NCwiZGVidWciOiIiLCJsYW5nIjoiIn0.dhjSA7U9zqxblbceN0vuyu736o53JmT7rTucJywtsrs"
+    #token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQ2NzY4NjAsIm5iZiI6MTY2MzU3NDY2MCwiaWF0IjoxNjYzNTcyODYwLCJqdGkiOiJDTTpjYXRfbWF0Y2g6bHQxMjM0NTYiLCJvcGVuX2lkIjoiIiwidWlkIjo2ODAwODQ4NiwiZGVidWciOiIiLCJsYW5nIjoiIn0.RjhpCKVFexinSU64UmoaW5th90qqaomnCtPLBmpNQhY"
     #SheepUpdate(token).update_res()
     #SheepUpdate(token).update_res_batch(20)
-    SheepUpdate(token).join_sheep()
+    SheepUpdate(token).update_res(False)
     pass
