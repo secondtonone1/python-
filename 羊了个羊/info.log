@@ -1,0 +1,17 @@
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): cat-match.easygame2021.com:80
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): cat-match.easygame2021.com:80
+DEBUG:urllib3.connectionpool:http://cat-match.easygame2021.com:80 "GET /sheep/v1/game/map_info_ex?matchType=3 HTTP/1.1" 200 175
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): cat-match-static.easygame2021.com:443
+DEBUG:urllib3.connectionpool:https://cat-match-static.easygame2021.com:443 "GET /maps/57c29f9804b46d29f10986adfcceb87c.txt HTTP/1.1" 200 23510
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): cat-match.easygame2021.com:443
+DEBUG:urllib3.connectionpool:https://cat-match.easygame2021.com:443 "POST /sheep/v1/game/game_over_ex HTTP/1.1" 200 68
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): cat-match.easygame2021.com:80
+DEBUG:urllib3.connectionpool:http://cat-match.easygame2021.com:80 "GET /sheep/v1/game/personal_info HTTP/1.1" 200 412
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): cat-match.easygame2021.com:80
+DEBUG:urllib3.connectionpool:http://cat-match.easygame2021.com:80 "GET /sheep/v1/game/map_info_ex?matchType=3 HTTP/1.1" 200 175
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): cat-match-static.easygame2021.com:443
+DEBUG:urllib3.connectionpool:https://cat-match-static.easygame2021.com:443 "GET /maps/57c29f9804b46d29f10986adfcceb87c.txt HTTP/1.1" 200 23510
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): cat-match.easygame2021.com:443
+DEBUG:urllib3.connectionpool:https://cat-match.easygame2021.com:443 "POST /sheep/v1/game/game_over_ex HTTP/1.1" 200 68
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): cat-match.easygame2021.com:80
+DEBUG:urllib3.connectionpool:http://cat-match.easygame2021.com:80 "GET /sheep/v1/game/personal_info HTTP/1.1" 200 412
